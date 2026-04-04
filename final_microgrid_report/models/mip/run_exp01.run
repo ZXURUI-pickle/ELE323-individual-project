@@ -1,0 +1,42 @@
+reset;
+
+option solver gurobi;
+option gurobi_options 'timelimit=600 mipgap=1e-6';
+
+model "models/mip/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+
+solve;
+
+printf "\n---- MIP SUMMARY ----\n";
+printf "Status    = %s\n", solve_result;
+printf "TotalCost = %.6f\n", TotalCost;
+printf "Gen on-hours (sum z)    = %.0f / %d\n", sum{t in T} z_g[t], NT;
+printf "Gen starts   (sum y)    = %.0f\n",       sum{t in T} y_start[t];
+printf "Batt charge hours       = %.0f / %d\n",  sum{t in T} u_c[t], NT;
+printf "Batt discharge hours    = %.0f / %d\n",  sum{t in T} u_d[t], NT;
+
+printf "Writing results_mip.txt ...\n";
+
+# Columns:
+# [t price Pgrid Pg Pc Pd SoC Pb gen_state gen_start u_c u_d]
+printf {t in T}
+"%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+t,
+load[t],
+c_grid[t],
+Pgrid[t],
+Pg[t],
+Pc[t],
+Pd[t],
+SoC[t],
+(Pd[t]-Pc[t]),
+z_g[t],
+y_start[t],
+u_c[t],
+u_d[t]
+> "experiments/exp_01_synthetic_baseline/outputs/results_mip.txt";
+
+printf "Done.\n";
+
+# include "models/mip/run_exp01.run";

@@ -1,0 +1,33 @@
+reset;
+
+
+# =========================
+# Part 1: Experiment 1
+# =========================
+
+model "models/without_optimization/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+
+printf "\n==============================\n";
+printf "Experiment 1 baseline cost\n";
+printf "Max cost (Exp 1) = %.6f\n", MaxCost;
+
+param MaxCostExp1;
+let MaxCostExp1 := MaxCost;
+
+# =========================
+# Part 2: Experiment 3
+# overwrite only price with real UK price
+# =========================
+update data NT , c_grid;
+data  "experiments/exp_03_uk_validation/uk_grid_data/uk_mip_apx_hourly_168h_2026-02-15_to_2026-02-21.dat";
+
+printf "\n==============================\n";
+printf "Experiment 3 baseline cost\n";
+printf "Max cost (Exp 3) = %.6f\n", MaxCost;
+printf "\n==============================\n";
+
+param MaxCostExp3;
+let MaxCostExp3 := MaxCost;
+
+# include "models/without_optimization/run.run";

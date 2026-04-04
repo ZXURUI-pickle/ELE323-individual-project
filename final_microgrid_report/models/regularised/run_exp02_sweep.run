@@ -1,0 +1,79 @@
+reset;
+
+option solver gurobi;
+option gurobi_options 'timelimit=600';
+
+model "models/regularised/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+
+# sweep values (log scale recommended)
+param gamma_base;
+let gamma_base := gamma_on;
+
+set K := {0.001,0.003,0.01,0.03,0.1,0.3,1,3,10,100,1000};
+
+for {k in K} {
+
+    let gamma_on := k * gamma_base;
+
+    solve;
+
+    printf "\n---- REGULARISED SWEEP GAMMA ----\n";
+    printf "k        = %.6f\n", k;
+    printf "gamma_on = %.6f\n", gamma_on;
+
+    printf "Writing results_reg_k_%g.txt ...\n", k;
+
+    printf {t in T}
+    "%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+    t,
+    c_grid[t],
+    Pgrid[t],
+    Pg[t],
+    Pc[t],
+    Pd[t],
+    SoC[t],
+    Pb[t],
+    s_g[t],
+    ds_abs[t],
+    0,0
+    > ("experiments/exp_02_parameter_sweep/outputs/results_reg_k_" & k & ".txt");
+}
+
+let gamma_on := gamma_base;
+
+param beta_base;
+let beta_base := beta_on;
+
+set KR := {0.001,0.003,0.01,0.03,0.1,0.3,1,3,10,100,1000};
+
+for {R in KR} {
+
+    let beta_on := R * beta_base;
+
+    solve;
+
+    printf "\n---- REGULARISED SWEEP BETA ----\n";
+    printf "R        = %.6f\n", R;
+    printf "beta_on = %.6f\n", beta_on;
+
+    printf "Writing results_reg_R_%g.txt ...\n", R;
+
+    printf {t in T}
+    "%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+    t,
+    load[t],
+    c_grid[t],
+    Pgrid[t],
+    Pg[t],
+    Pc[t],
+    Pd[t],
+    SoC[t],
+    Pb[t],
+    s_g[t],
+    ds_abs[t],
+    0,0
+    > ("experiments/exp_02_parameter_sweep/outputs/results_reg_R_" & R & ".txt");
+}
+
+# include "models/regularised/run_exp02_sweep.run";

@@ -1,0 +1,40 @@
+reset;
+
+option solver gurobi;
+option gurobi_options 'timelimit=600';
+
+model "models/mip/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+update data NT , c_grid;
+data  "experiments/exp_03_uk_validation/uk_grid_data/uk_mip_apx_hourly_168h_2026-02-15_to_2026-02-21.dat";
+
+solve;
+
+printf "\n---- EXP03 MIP SUMMARY ----\n";
+printf "Status    = %s\n", solve_result;
+printf "TotalCost = %.6f\n", TotalCost;
+
+printf "Writing results_mip_uk.txt ...\n";
+
+# Columns:
+# [t  price Pgrid Pg Pc Pd SoC Pb gen_state gen_start u_c u_d]
+printf {t in T}
+"%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+t,
+load[t],
+c_grid[t],
+Pgrid[t],
+Pg[t],
+Pc[t],
+Pd[t],
+SoC[t],
+(Pd[t]-Pc[t]),
+z_g[t],      # generator on/off
+y_start[t],  # generator start-up
+u_c[t],      # charge mode
+u_d[t]       # discharge mode
+> "experiments/exp_03_uk_validation/outputs/results_mip_uk.txt";
+
+printf "Done.\n";
+
+# include "models/mip/run_exp03.run";

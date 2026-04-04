@@ -1,0 +1,38 @@
+reset;
+
+option solver gurobi;
+option gurobi_options 'timelimit=600';
+
+model "models/convex/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+
+
+solve;
+
+printf "\n---- CONVEX SUMMARY ----\n";
+printf "Status    = %s\n", solve_result;
+printf "TotalCost = %.6f\n", TotalCost;
+
+printf "Writing results_convex.txt ...\n";
+
+# Columns:
+# [t load price Pgrid Pg Pc Pd SoC Pb gen_state gen_start u_c u_d]
+printf {t in T}
+"%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+t,
+load[t],
+c_grid[t],
+Pgrid[t],
+Pg[t],
+Pc[t],
+Pd[t],
+SoC[t],
+(Pd[t]-Pc[t]),
+0,      # gen_state (unused in convex)
+0,      # gen_start (unused in convex)
+0, 0
+> "experiments/exp_01_synthetic_baseline/outputs/results_convex.txt";
+
+printf "Done.\n";
+
+# include "models/convex/run_exp01.run";

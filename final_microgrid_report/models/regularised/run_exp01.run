@@ -1,0 +1,41 @@
+reset;
+
+option solver gurobi;
+option gurobi_options 'timelimit=600';
+
+model "models/regularised/model.mod";
+data  "experiments/exp_01_synthetic_baseline/outputs/data.dat";
+
+solve;
+
+printf "\n---- REGULARISED SUMMARY ----\n";
+printf "Status    = %s\n", solve_result;
+printf "TotalCost = %.6f\n", TotalCost;
+printf "gamma_on  = %.6f\n", gamma_on;
+printf "beta_on   = %.6f\n", beta_on;
+printf "gamma_Pb  = %.6f\n", gamma_Pb;
+
+printf "Writing results_regularised.txt ...\n";
+
+# Columns:
+# [t price Pgrid Pg Pc Pd SoC Pb gen_state gen_start u_c u_d]
+# gen_state = s_g, gen_start = ds_abs
+printf {t in T}
+"%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+t,
+load[t],
+c_grid[t],
+Pgrid[t],
+Pg[t],
+Pc[t],
+Pd[t],
+SoC[t],
+Pb[t],
+s_g[t],
+ds_abs[t],
+0, 0
+> "experiments/exp_01_synthetic_baseline/outputs/results_regularised.txt";
+
+printf "Done.\n";
+
+# include "models/regularised/run_exp01.run";
