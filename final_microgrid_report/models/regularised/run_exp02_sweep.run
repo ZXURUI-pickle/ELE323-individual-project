@@ -25,8 +25,9 @@ for {k in K} {
     printf "Writing results_reg_k_%g.txt ...\n", k;
 
     printf {t in T}
-    "%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
+    "%d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %d %d\n",
     t,
+    load[t],
     c_grid[t],
     Pgrid[t],
     Pg[t],
